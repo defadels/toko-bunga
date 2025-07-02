@@ -3,6 +3,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     initializeSearch();
     initializeCart();
+    initializeUserDropdown();
+    initializeMobileMenu();
     updateCartCount();
 });
 
@@ -30,8 +32,19 @@ function initializeSearch() {
 
         // Hide suggestions when clicking outside
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-box')) {
+            if (!e.target.closest('.search-container')) {
                 searchSuggestions.style.display = 'none';
+            }
+        });
+        
+        // Handle Enter key for search
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = this.value.trim();
+                if (query) {
+                    window.location.href = `products.php?search=${encodeURIComponent(query)}`;
+                }
             }
         });
     }
@@ -64,16 +77,35 @@ function displaySearchSuggestions(products) {
     products.forEach(product => {
         html += `
             <div class="suggestion-item" onclick="goToProduct(${product.id})">
-                <strong>${product.name}</strong>
-                <div style="font-size: 0.9em; color: #666;">
-                    ${product.category_name} - ${formatRupiah(product.price)}
+                <span style="font-size: 1.2rem;">🌹</span>
+                <div>
+                    <strong>${product.name}</strong>
+                    <div style="font-size: 0.9em; color: #666;">
+                        ${product.category_name} • ${formatRupiah(product.price)}
+                    </div>
                 </div>
             </div>
         `;
     });
     
+    // Add "View all results" option
+    html += `
+        <div class="suggestion-item" onclick="searchAll()" style="border-top: 1px solid #eee; font-weight: bold; color: #4CAF50;">
+            <span style="font-size: 1.2rem;">🔍</span>
+            <div>Lihat semua hasil pencarian</div>
+        </div>
+    `;
+    
     searchSuggestions.innerHTML = html;
     searchSuggestions.style.display = 'block';
+}
+
+// Search all products
+function searchAll() {
+    const query = document.getElementById('search-input').value.trim();
+    if (query) {
+        window.location.href = `products.php?search=${encodeURIComponent(query)}`;
+    }
 }
 
 // Navigate to product detail
@@ -81,11 +113,86 @@ function goToProduct(productId) {
     window.location.href = `product-detail.php?id=${productId}`;
 }
 
+// Initialize user dropdown functionality
+function initializeUserDropdown() {
+    const userDropdown = document.querySelector('.user-dropdown');
+    const userBtn = document.querySelector('.user-btn');
+    
+    if (userBtn) {
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+    }
+}
+
+// Toggle user menu (for mobile compatibility)
+function toggleUserMenu() {
+    const userDropdown = document.querySelector('.user-dropdown');
+    if (userDropdown) {
+        userDropdown.classList.toggle('active');
+    }
+}
+
+// Initialize mobile menu functionality
+function initializeMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            toggleMobileMenu();
+        });
+        
+        // Close mobile menu when clicking nav links
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                closeMobileMenu();
+            });
+        });
+    }
+}
+
+// Toggle mobile menu
+function toggleMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.classList.toggle('active');
+        
+        if (mobileMenu.style.display === 'block') {
+            mobileMenu.style.display = 'none';
+        } else {
+            mobileMenu.style.display = 'block';
+        }
+    }
+}
+
+// Close mobile menu
+function closeMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.classList.remove('active');
+        mobileMenu.style.display = 'none';
+    }
+}
+
 // Initialize cart functionality
 function initializeCart() {
     // Add event listeners to "Add to Cart" buttons
     document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('add-to-cart')) {
+        if (e.target.classList.contains('add-to-cart') || e.target.classList.contains('add-to-cart-btn')) {
             e.preventDefault();
             const productId = e.target.getAttribute('data-product-id');
             addToCart(productId);
@@ -105,6 +212,7 @@ function addToCart(productId, quantity = 1) {
     }
 
     const formData = new FormData();
+    formData.append('action', 'add');
     formData.append('product_id', productId);
     formData.append('quantity', quantity);
 
@@ -115,7 +223,7 @@ function addToCart(productId, quantity = 1) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showAlert('Produk berhasil ditambahkan ke keranjang!', 'success');
+            showAlert('Produk berhasil ditambahkan ke keranjang! 🛒', 'success');
             updateCartCount();
         } else {
             showAlert(data.message || 'Gagal menambahkan produk ke keranjang.', 'error');
@@ -139,6 +247,12 @@ function updateCartCount() {
                 if (cartCountElement) {
                     cartCountElement.textContent = data.count;
                     cartCountElement.style.display = data.count > 0 ? 'flex' : 'none';
+                    
+                    // Add animation when count changes
+                    cartCountElement.style.transform = 'scale(1.3)';
+                    setTimeout(() => {
+                        cartCountElement.style.transform = 'scale(1)';
+                    }, 200);
                 }
             }
         })
@@ -169,7 +283,10 @@ function showAlert(message, type = 'info') {
     // Create new alert
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
-    alert.textContent = message;
+    alert.innerHTML = `
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; font-size: 1.2rem; cursor: pointer; margin-left: 1rem;">×</button>
+    `;
     
     // Add to top of body
     document.body.insertBefore(alert, document.body.firstChild);
@@ -180,6 +297,12 @@ function showAlert(message, type = 'info') {
             alert.remove();
         }
     }, 5000);
+    
+    // Add entrance animation
+    setTimeout(() => {
+        alert.style.transform = 'translateY(0)';
+        alert.style.opacity = '1';
+    }, 10);
 }
 
 // Product quantity controls

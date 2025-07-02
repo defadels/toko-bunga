@@ -1,11 +1,11 @@
-Folder untuk gambar produk bunga.
+This directory will contain product images.
+Product images should be uploaded here when adding new products.
 
-Upload gambar produk dengan format:
-- JPG, PNG, WebP
-- Ukuran optimal: 400x400px
-- Nama file: gunakan huruf kecil dan strip (-)
+Supported formats: JPG, PNG, GIF
+Recommended size: 800x600px or larger
+File naming: use descriptive names without spaces (use hyphens or underscores)
 
-Contoh nama file:
-- mawar-merah.jpg
-- tulip-orange.jpg
-- anggrek-putih.jpg 
+Example:
+- rose-bouquet-red.jpg
+- orchid-arrangement-white.png
+- sunflower-bunch-yellow.jpg 
