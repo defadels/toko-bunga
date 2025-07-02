@@ -1,0 +1,11 @@
+Folder ini digunakan untuk menyimpan gambar aplikasi toko bunga.
+
+Struktur folder:
+- products/ : Gambar produk bunga
+- categories/ : Gambar kategori
+- hero-flowers.jpg : Gambar hero section
+
+Untuk menambahkan gambar:
+1. Upload gambar ke folder yang sesuai
+2. Update nama file di database atau form admin
+3. Pastikan format gambar: JPG, PNG, WebP 

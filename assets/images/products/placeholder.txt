@@ -1,0 +1,11 @@
+Folder untuk gambar produk bunga.
+
+Upload gambar produk dengan format:
+- JPG, PNG, WebP
+- Ukuran optimal: 400x400px
+- Nama file: gunakan huruf kecil dan strip (-)
+
+Contoh nama file:
+- mawar-merah.jpg
+- tulip-orange.jpg
+- anggrek-putih.jpg 

@@ -1,0 +1,13 @@
+Folder untuk gambar kategori produk.
+
+Upload gambar kategori dengan format:
+- JPG, PNG, WebP
+- Ukuran optimal: 300x200px
+- Nama file: gunakan huruf kecil dan strip (-)
+
+Contoh nama file:
+- mawar.jpg
+- tulip.jpg
+- anggrek.jpg
+- wedding.jpg
+- papan.jpg 
