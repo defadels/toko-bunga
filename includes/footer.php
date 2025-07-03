@@ -5,7 +5,7 @@
                 <div class="footer-section footer-about">
                     <div class="footer-logo">
                         <span class="footer-logo-icon">🌺</span>
-                        <span class="footer-logo-text">Toko Bunga</span>
+                        <span class="footer-logo-text">FloRisen</span>
                     </div>
                     <p class="footer-description">
                         Menyediakan bunga segar berkualitas tinggi untuk setiap momen spesial Anda. 

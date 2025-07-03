@@ -3,7 +3,7 @@
         <div class="header-content">
             <a href="index.php" class="logo">
                 <span class="logo-icon">🌺</span>
-                <span class="logo-text">Toko Bunga</span>
+                <span class="logo-text">FloRisen</span>
             </a>
             
             <nav class="main-nav">
