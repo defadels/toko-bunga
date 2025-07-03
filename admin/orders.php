@@ -14,16 +14,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $order_id = (int)$_POST['order_id'];
     $new_status = $_POST['status'];
     
-    $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
-    if ($stmt->execute([$new_status, $order_id])) {
-        $success = 'Status pesanan berhasil diupdate.';
+    $valid_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    
+    if (in_array($new_status, $valid_statuses)) {
+        $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        if ($stmt->execute([$new_status, $order_id])) {
+            $success = 'Status pesanan berhasil diupdate.';
+        } else {
+            $error = 'Gagal mengupdate status pesanan.';
+        }
     } else {
-        $error = 'Gagal mengupdate status pesanan.';
+        $error = 'Status tidak valid.';
+    }
+}
+
+// Handle payment status update  
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_payment_status'])) {
+    $order_id = (int)$_POST['order_id'];
+    $new_payment_status = $_POST['payment_status'];
+    
+    $valid_payment_statuses = ['pending', 'paid', 'failed'];
+    
+    if (in_array($new_payment_status, $valid_payment_statuses)) {
+        $stmt = $pdo->prepare("UPDATE orders SET payment_status = ? WHERE id = ?");
+        if ($stmt->execute([$new_payment_status, $order_id])) {
+            $success = 'Status pembayaran berhasil diupdate.';
+        } else {
+            $error = 'Gagal mengupdate status pembayaran.';
+        }
+    } else {
+        $error = 'Status pembayaran tidak valid.';
     }
 }
 
 // Get filter parameters
 $status_filter = $_GET['status'] ?? '';
+$payment_status_filter = $_GET['payment_status'] ?? '';
 $date_filter = $_GET['date'] ?? '';
 
 // Build query
@@ -33,6 +59,11 @@ $params = [];
 if (!empty($status_filter)) {
     $where_conditions[] = "o.status = ?";
     $params[] = $status_filter;
+}
+
+if (!empty($payment_status_filter)) {
+    $where_conditions[] = "o.payment_status = ?";
+    $params[] = $payment_status_filter;
 }
 
 if (!empty($date_filter)) {
@@ -61,6 +92,13 @@ $status_options = [
     'shipped' => 'Dikirim',
     'delivered' => 'Selesai',
     'cancelled' => 'Dibatalkan'
+];
+
+// Payment status options
+$payment_status_options = [
+    'pending' => 'Belum Bayar',
+    'paid' => 'Sudah Bayar',
+    'failed' => 'Gagal'
 ];
 ?>
 
@@ -109,13 +147,25 @@ $status_options = [
                     </div>
                     
                     <div class="filter-group">
+                        <label>Status Pembayaran:</label>
+                        <select name="payment_status" class="filter-select">
+                            <option value="">Semua Status</option>
+                            <?php foreach($payment_status_options as $value => $label): ?>
+                                <option value="<?php echo $value; ?>" <?php echo $payment_status_filter == $value ? 'selected' : ''; ?>>
+                                    <?php echo $label; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
                         <label>Tanggal:</label>
                         <input type="date" name="date" class="filter-select" value="<?php echo htmlspecialchars($date_filter); ?>">
                     </div>
                     
                     <button type="submit" class="btn btn-primary">Filter</button>
                     
-                    <?php if (!empty($status_filter) || !empty($date_filter)): ?>
+                    <?php if (!empty($status_filter) || !empty($payment_status_filter) || !empty($date_filter)): ?>
                         <a href="orders.php" class="btn btn-outline">Reset</a>
                     <?php endif; ?>
                 </form>
@@ -135,6 +185,7 @@ $status_options = [
                                 <th>Pelanggan</th>
                                 <th>Total</th>
                                 <th>Status</th>
+                                <th>Status Bayar</th>
                                 <th>Tanggal</th>
                                 <th>Aksi</th>
                             </tr>
@@ -160,6 +211,20 @@ $status_options = [
                                             <?php endforeach; ?>
                                         </select>
                                         <input type="hidden" name="update_status" value="1">
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="POST" class="status-form">
+                                        <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                                        <select name="payment_status" class="status-select" onchange="this.form.submit()">
+                                            <?php foreach($payment_status_options as $value => $label): ?>
+                                                <option value="<?php echo $value; ?>" 
+                                                        <?php echo $order['payment_status'] == $value ? 'selected' : ''; ?>>
+                                                    <?php echo $label; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <input type="hidden" name="update_payment_status" value="1">
                                     </form>
                                 </td>
                                 <td><?php echo date('d/m/Y H:i', strtotime($order['order_date'])); ?></td>

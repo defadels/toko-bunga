@@ -278,6 +278,7 @@ body {
 /* User Dropdown */
 .user-dropdown {
     position: relative;
+    z-index: 1000;
 }
 
 .user-btn {
@@ -292,10 +293,17 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    outline: none;
+    user-select: none;
 }
 
 .user-btn:hover {
     background: rgba(255,255,255,0.2);
+}
+
+.user-btn:focus {
+    background: rgba(255,255,255,0.2);
+    outline: 2px solid rgba(255,255,255,0.3);
 }
 
 .user-avatar {
@@ -333,12 +341,14 @@ body {
     transform: translateY(-10px);
     transition: all 0.3s ease;
     z-index: 1001;
+    pointer-events: none;
 }
 
 .user-dropdown.active .user-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    pointer-events: auto;
 }
 
 .menu-item {

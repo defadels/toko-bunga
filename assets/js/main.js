@@ -1,12 +1,38 @@
 // Main JavaScript file for Toko Bunga
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing...');
+    console.log('User logged in:', typeof userLoggedIn !== 'undefined' ? userLoggedIn : 'undefined');
+    
     initializeSearch();
     initializeCart();
     initializeUserDropdown();
     initializeMobileMenu();
     updateCartCount();
+    
+    // Manual test for dropdown
+    setTimeout(() => {
+        testDropdownFunctionality();
+    }, 1000);
 });
+
+// Test dropdown functionality
+function testDropdownFunctionality() {
+    const userDropdown = document.querySelector('.user-dropdown');
+    const userBtn = document.querySelector('.user-btn');
+    const userMenu = document.querySelector('.user-menu');
+    
+    console.log('Testing dropdown:', {
+        userDropdown: !!userDropdown,
+        userBtn: !!userBtn,
+        userMenu: !!userMenu,
+        userDropdownHTML: userDropdown ? userDropdown.outerHTML : 'null'
+    });
+    
+    if (userBtn) {
+        console.log('Button event listeners:', getEventListeners ? getEventListeners(userBtn) : 'Cannot get listeners');
+    }
+}
 
 // Live Search Functionality
 function initializeSearch() {
@@ -117,28 +143,91 @@ function goToProduct(productId) {
 function initializeUserDropdown() {
     const userDropdown = document.querySelector('.user-dropdown');
     const userBtn = document.querySelector('.user-btn');
+    const userMenu = document.querySelector('.user-menu');
     
-    if (userBtn) {
-        userBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            userDropdown.classList.toggle('active');
-        });
+    console.log('Initializing user dropdown...', {
+        userDropdown: !!userDropdown,
+        userBtn: !!userBtn,
+        userMenu: !!userMenu
+    });
+    
+    if (userBtn && userDropdown) {
+        // Remove any existing click listeners
+        userBtn.removeEventListener('click', handleUserBtnClick);
+        
+        // Add new click listener
+        userBtn.addEventListener('click', handleUserBtnClick);
         
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!userDropdown.contains(e.target)) {
-                userDropdown.classList.remove('active');
+                console.log('Clicking outside, closing dropdown');
+                closeUserDropdown();
             }
         });
+        
+        console.log('User dropdown initialized successfully');
+    } else {
+        console.log('User dropdown elements not found');
     }
 }
 
-// Toggle user menu (for mobile compatibility)
-function toggleUserMenu() {
+// Handle user button click
+function handleUserBtnClick(e) {
+    console.log('User button clicked via event listener');
+    e.preventDefault();
+    e.stopPropagation();
+    toggleUserMenuAdvanced();
+}
+
+// Advanced toggle function
+function toggleUserMenuAdvanced() {
     const userDropdown = document.querySelector('.user-dropdown');
-    if (userDropdown) {
-        userDropdown.classList.toggle('active');
+    const userMenu = document.querySelector('.user-menu');
+    
+    console.log('toggleUserMenuAdvanced called', {
+        userDropdown: !!userDropdown,
+        userMenu: !!userMenu
+    });
+    
+    if (userDropdown && userMenu) {
+        const isActive = userDropdown.classList.contains('active');
+        console.log('Current state:', isActive ? 'active' : 'inactive');
+        
+        if (isActive) {
+            closeUserDropdown();
+        } else {
+            openUserDropdown();
+        }
     }
+}
+
+// Open user dropdown
+function openUserDropdown() {
+    const userDropdown = document.querySelector('.user-dropdown');
+    console.log('Opening dropdown...');
+    
+    if (userDropdown) {
+        userDropdown.classList.add('active');
+        console.log('Dropdown opened, classes:', userDropdown.className);
+    }
+}
+
+// Close user dropdown
+function closeUserDropdown() {
+    const userDropdown = document.querySelector('.user-dropdown');
+    console.log('Closing dropdown...');
+    
+    if (userDropdown) {
+        userDropdown.classList.remove('active');
+        console.log('Dropdown closed, classes:', userDropdown.className);
+    }
+}
+
+// Toggle user menu (for compatibility with onclick in HTML)
+function toggleUserMenu() {
+    console.log('toggleUserMenu called from HTML onclick');
+    toggleUserMenuAdvanced();
 }
 
 // Initialize mobile menu functionality
@@ -190,11 +279,15 @@ function closeMobileMenu() {
 
 // Initialize cart functionality
 function initializeCart() {
+    console.log('Initializing cart...');
+    
     // Add event listeners to "Add to Cart" buttons
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('add-to-cart') || e.target.classList.contains('add-to-cart-btn')) {
+            console.log('Add to cart button clicked');
             e.preventDefault();
             const productId = e.target.getAttribute('data-product-id');
+            console.log('Product ID:', productId);
             addToCart(productId);
         }
     });
@@ -202,8 +295,11 @@ function initializeCart() {
 
 // Add product to cart
 function addToCart(productId, quantity = 1) {
+    console.log('addToCart called with:', {productId, quantity, userLoggedIn});
+    
     // Check if user is logged in
     if (!isUserLoggedIn()) {
+        console.log('User not logged in, redirecting...');
         showAlert('Silakan login terlebih dahulu untuk menambahkan produk ke keranjang.', 'warning');
         setTimeout(() => {
             window.location.href = 'login.php';
@@ -211,17 +307,25 @@ function addToCart(productId, quantity = 1) {
         return;
     }
 
+    console.log('User is logged in, proceeding with add to cart...');
+    
     const formData = new FormData();
     formData.append('action', 'add');
     formData.append('product_id', productId);
     formData.append('quantity', quantity);
 
+    console.log('Sending request to api/cart.php...');
+    
     fetch('api/cart.php', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response received:', response);
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             showAlert('Produk berhasil ditambahkan ke keranjang! 🛒', 'success');
             updateCartCount();
@@ -237,11 +341,17 @@ function addToCart(productId, quantity = 1) {
 
 // Update cart count in header
 function updateCartCount() {
-    if (!isUserLoggedIn()) return;
+    if (!isUserLoggedIn()) {
+        console.log('User not logged in, skipping cart count update');
+        return;
+    }
+
+    console.log('Updating cart count...');
 
     fetch('api/cart-count.php')
         .then(response => response.json())
         .then(data => {
+            console.log('Cart count data:', data);
             if (data.success) {
                 const cartCountElement = document.getElementById('cart-count');
                 if (cartCountElement) {
@@ -264,7 +374,9 @@ function updateCartCount() {
 // Check if user is logged in
 function isUserLoggedIn() {
     // This will be set by PHP
-    return typeof userLoggedIn !== 'undefined' && userLoggedIn;
+    const isLoggedIn = typeof userLoggedIn !== 'undefined' && userLoggedIn;
+    console.log('isUserLoggedIn check:', {userLoggedIn, isLoggedIn});
+    return isLoggedIn;
 }
 
 // Format price to Rupiah
@@ -304,6 +416,19 @@ function showAlert(message, type = 'info') {
         alert.style.opacity = '1';
     }, 10);
 }
+
+// Manual dropdown test function (for debugging)
+window.testDropdown = function() {
+    console.log('Manual dropdown test started');
+    const userDropdown = document.querySelector('.user-dropdown');
+    if (userDropdown) {
+        console.log('Found dropdown, toggling...');
+        userDropdown.classList.toggle('active');
+        console.log('New state:', userDropdown.classList.contains('active') ? 'active' : 'inactive');
+    } else {
+        console.log('Dropdown not found!');
+    }
+};
 
 // Product quantity controls
 function changeQuantity(change) {

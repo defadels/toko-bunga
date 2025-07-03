@@ -35,7 +35,7 @@
                         </a>
                         
                         <div class="user-dropdown">
-                            <button class="user-btn" onclick="toggleUserMenu()">
+                            <button class="user-btn" onclick="toggleUserMenuTest()" type="button">
                                 <span class="user-avatar">👤</span>
                                 <span class="user-name"><?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
                                 <span class="dropdown-arrow">▼</span>
@@ -99,4 +99,13 @@
             </div>
         </div>
     </div>
-</header> 
+</header>
+
+<!-- JavaScript Variables -->
+<script>
+    // Set user login status for JavaScript
+    var userLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'; ?>;
+</script>
+
+<!-- Dropdown Test Script -->
+<script src="dropdown-test.js"></script> 

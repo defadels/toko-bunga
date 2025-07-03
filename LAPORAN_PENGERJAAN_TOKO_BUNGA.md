@@ -1,0 +1,357 @@
+# LAPORAN PENGERJAAN
+## SISTEM INFORMASI TOKO BUNGA ONLINE
+
+---
+
+**Kelas**: [ISI KELAS ANDA]  
+**NIM**: [ISI NIM ANDA]  
+**Nama**: [ISI NAMA ANDA]  
+**Tanggal**: [ISI TANGGAL PENGUMPULAN]  
+**Tanda Tangan**: [_______________]
+
+---
+
+## 1. PENDAHULUAN
+
+### 1.1 Deskripsi Aplikasi
+**Toko Bunga Online** adalah sebuah aplikasi berbasis web yang dikembangkan untuk memfasilitasi penjualan bunga secara online. Aplikasi ini dirancang menggunakan teknologi HTML5, CSS3, JavaScript, PHP, dan MySQL dengan antarmuka yang responsive dan user-friendly.
+
+### 1.2 Tujuan Aplikasi
+Aplikasi ini digunakan untuk:
+- Memfasilitasi penjualan bunga secara online
+- Memberikan kemudahan pelanggan dalam berbelanja bunga
+- Mengelola inventori dan pesanan secara efisien
+- Menyediakan platform e-commerce lengkap untuk toko bunga
+
+### 1.3 Target Pengguna
+Aplikasi ini digunakan oleh:
+- **Pelanggan**: Membeli bunga dan produk terkait
+- **Admin**: Mengelola seluruh sistem dan data
+- **Petugas**: Membantu admin dalam pengelolaan operasional
+
+### 1.4 Lokasi dan Deployment
+Aplikasi dapat dijalankan di:
+- Local server (XAMPP, Laragon, WAMP)
+- Web server dengan PHP 7.4+ dan MySQL/MariaDB
+- URL akses: `http://localhost/toko-bunga/`
+
+### 1.5 Data yang Dikelola
+Data yang dikelola meliputi:
+- Data pengguna (admin, petugas, pelanggan)
+- Data kategori produk bunga
+- Data produk bunga dan stok
+- Data pesanan dan detail pesanan
+- Data keranjang belanja
+- Data transaksi dan pembayaran
+
+### 1.6 Informasi Akun Default
+Untuk keperluan testing dan demonstrasi, tersedia akun:
+
+**Administrator:**
+- Username: `admin`
+- Password: `password`
+- Role: Administrator (akses penuh)
+
+**Petugas:**
+- Username: `petugas1`
+- Password: `password`
+- Role: Petugas (akses terbatas)
+
+**Pelanggan:**
+- Username: `pelanggan1`
+- Password: `password`
+- Role: Customer (frontend)
+
+> **Catatan**: Disarankan mengganti password default setelah implementasi untuk keamanan sistem.
+
+---
+
+## 2. ISI
+
+### 2.1 Model Data (Skema Database)
+
+Database `toko_bunga` menggunakan 6 tabel utama dengan relasi yang terstruktur:
+
+#### 2.1.1 Diagram ERD
+```
+USERS (1) -----> (M) ORDERS (1) -----> (M) ORDER_ITEMS (M) <----- (1) PRODUCTS
+  |                                                                     |
+  |                                                                     |
+  v                                                                     |
+CART (M) --------------------------------------------------------> (1)  |
+                                                                         |
+CATEGORIES (1) --------------------------------------------------------> (M)
+```
+
+#### 2.1.2 Struktur Tabel Database
+
+**1. Tabel `users`**
+- **Fungsi**: Menyimpan data semua pengguna sistem
+- **Primary Key**: `id` (INT, AUTO_INCREMENT)
+- **Atribut Utama**:
+  - `username` (VARCHAR 50, UNIQUE): Username login
+  - `email` (VARCHAR 100, UNIQUE): Email pengguna
+  - `password` (VARCHAR 255): Password ter-hash
+  - `full_name` (VARCHAR 100): Nama lengkap
+  - `phone` (VARCHAR 20): Nomor telepon
+  - `address` (TEXT): Alamat lengkap
+  - `role` (ENUM): admin, petugas, pelanggan
+  - `is_active` (TINYINT): Status aktif pengguna
+  - `created_at`, `updated_at` (TIMESTAMP): Waktu pembuatan dan update
+
+**2. Tabel `categories`**
+- **Fungsi**: Menyimpan kategori produk bunga
+- **Primary Key**: `id` (INT, AUTO_INCREMENT)
+- **Atribut Utama**:
+  - `name` (VARCHAR 100): Nama kategori
+  - `description` (TEXT): Deskripsi kategori
+  - `image` (VARCHAR 255): Gambar kategori
+  - `is_active` (TINYINT): Status aktif kategori
+  - `created_at`, `updated_at` (TIMESTAMP): Waktu pembuatan dan update
+
+**3. Tabel `products`**
+- **Fungsi**: Menyimpan data produk bunga
+- **Primary Key**: `id` (INT, AUTO_INCREMENT)
+- **Foreign Key**: `category_id` → `categories(id)`
+- **Atribut Utama**:
+  - `category_id` (INT): ID kategori produk
+  - `name` (VARCHAR 150): Nama produk
+  - `description` (TEXT): Deskripsi produk
+  - `price` (DECIMAL 12,2): Harga produk
+  - `stock` (INT): Jumlah stok
+  - `image` (VARCHAR 255): Gambar produk
+  - `weight` (DECIMAL 8,2): Berat produk
+  - `is_featured` (TINYINT): Status produk unggulan
+  - `is_active` (TINYINT): Status aktif produk
+
+**4. Tabel `orders`**
+- **Fungsi**: Menyimpan data pesanan pelanggan
+- **Primary Key**: `id` (INT, AUTO_INCREMENT)
+- **Foreign Key**: `user_id` → `users(id)`
+- **Atribut Utama**:
+  - `user_id` (INT): ID pelanggan
+  - `order_number` (VARCHAR 50, UNIQUE): Nomor pesanan
+  - `total_amount` (DECIMAL 12,2): Total pembayaran
+  - `shipping_address` (TEXT): Alamat pengiriman
+  - `shipping_cost` (DECIMAL 10,2): Biaya pengiriman
+  - `payment_method` (ENUM): transfer, cod, ewallet
+  - `status` (ENUM): pending, confirmed, processing, shipped, delivered, cancelled
+  - `notes` (TEXT): Catatan pesanan
+  - `order_date` (TIMESTAMP): Tanggal pesanan
+
+**5. Tabel `order_items`**
+- **Fungsi**: Menyimpan detail item dalam pesanan
+- **Primary Key**: `id` (INT, AUTO_INCREMENT)
+- **Foreign Key**: 
+  - `order_id` → `orders(id)`
+  - `product_id` → `products(id)`
+- **Atribut Utama**:
+  - `order_id` (INT): ID pesanan
+  - `product_id` (INT): ID produk
+  - `quantity` (INT): Jumlah item
+  - `price` (DECIMAL 12,2): Harga saat pembelian
+
+**6. Tabel `cart`**
+- **Fungsi**: Menyimpan keranjang belanja sementara
+- **Primary Key**: `id` (INT, AUTO_INCREMENT)
+- **Foreign Key**: 
+  - `user_id` → `users(id)`
+  - `product_id` → `products(id)`
+- **Atribut Utama**:
+  - `user_id` (INT): ID pengguna
+  - `product_id` (INT): ID produk
+  - `quantity` (INT): Jumlah item
+- **Unique Key**: `unique_user_product` (user_id, product_id)
+
+### 2.2 Penjelasan Fitur dan Screenshot
+
+#### 2.2.1 Fitur Frontend (Pelanggan)
+
+**A. Halaman Utama (Homepage)**
+- **Deskripsi**: Menampilkan produk unggulan, kategori, dan informasi toko
+- **Fitur**: 
+  - Hero section dengan gambar menarik
+  - Featured products yang dapat diklik
+  - Kategori produk dalam bentuk card
+  - Navigasi yang responsive
+- **Contoh Penggunaan**: Pelanggan masuk ke website dan melihat produk terbaru serta kategori yang tersedia
+
+**B. Halaman Produk**
+- **Deskripsi**: Menampilkan daftar produk dengan fitur pencarian dan filter
+- **Fitur**:
+  - Live search real-time
+  - Filter berdasarkan kategori
+  - Pagination untuk produk banyak
+  - Grid/list view toggle
+- **Contoh Penggunaan**: Pelanggan mencari "mawar merah" dan sistem menampilkan hasil pencarian secara real-time
+
+**C. Detail Produk**
+- **Deskripsi**: Menampilkan informasi lengkap produk
+- **Fitur**:
+  - Gambar produk yang dapat diperbesar
+  - Informasi harga, stok, dan deskripsi
+  - Tombol "Tambah ke Keranjang"
+  - Produk terkait/rekomendasi
+- **Contoh Penggunaan**: Pelanggan melihat detail "Mawar Merah Premium" dan menambahkan 2 buket ke keranjang
+
+**D. Keranjang Belanja**
+- **Deskripsi**: Mengelola produk yang akan dibeli
+- **Fitur**:
+  - Update quantity produk
+  - Hapus item dari keranjang
+  - Kalkulasi total harga otomatis
+  - Checkout ke halaman pembayaran
+- **Contoh Penggunaan**: Pelanggan menambah/mengurangi jumlah produk dan melihat perubahan total harga
+
+**E. Sistem Autentikasi**
+- **Deskripsi**: Login dan registrasi pelanggan
+- **Fitur**:
+  - Form registrasi dengan validasi
+  - Login dengan session management
+  - Logout yang aman
+  - Role-based access control
+- **Contoh Penggunaan**: Pelanggan baru mendaftar dengan email dan data pribadi
+
+#### 2.2.2 Fitur Backend (Admin/Petugas)
+
+**A. Dashboard Admin**
+- **Deskripsi**: Overview statistik dan aktivitas toko
+- **Fitur**:
+  - Total penjualan, produk, dan pelanggan
+  - Grafik penjualan bulanan
+  - Pesanan terbaru
+  - Quick actions untuk tugas umum
+- **Contoh Penggunaan**: Admin login dan melihat laporan penjualan hari ini sebesar Rp 2.500.000
+
+**B. Manajemen Produk**
+- **Deskripsi**: CRUD lengkap untuk produk
+- **Fitur**:
+  - Tambah produk baru dengan upload gambar
+  - Edit informasi produk dan stok
+  - Hapus produk yang tidak tersedia
+  - Set produk unggulan
+- **Contoh Penggunaan**: Admin menambah produk baru "Buket Valentine" dengan harga Rp 200.000
+
+**C. Manajemen Kategori**
+- **Deskripsi**: Pengelolaan kategori produk
+- **Fitur**:
+  - Buat kategori baru
+  - Edit nama dan deskripsi kategori
+  - Upload gambar kategori
+  - Aktifkan/nonaktifkan kategori
+- **Contoh Penggunaan**: Admin membuat kategori baru "Bunga Wisuda" untuk produk musiman
+
+**D. Manajemen Pesanan**
+- **Deskripsi**: Pengelolaan status pesanan
+- **Fitur**:
+  - Lihat daftar pesanan dengan filter status
+  - Update status pesanan (pending → confirmed → processing → shipped → delivered)
+  - Detail pesanan lengkap
+  - Print invoice pesanan
+- **Contoh Penggunaan**: Admin mengubah status pesanan ORD-2024-001 dari "confirmed" menjadi "processing"
+
+**E. Manajemen Pengguna**
+- **Deskripsi**: CRUD data admin, petugas, dan pelanggan
+- **Fitur**:
+  - Tambah admin/petugas baru
+  - Edit profil pengguna
+  - Aktifkan/nonaktifkan akun
+  - Reset password pengguna
+- **Contoh Penggunaan**: Admin menambah petugas baru dengan role "petugas" untuk membantu operasional
+
+**F. Laporan Penjualan**
+- **Deskripsi**: Analisis dan report penjualan
+- **Fitur**:
+  - Filter laporan berdasarkan tanggal
+  - Export laporan ke PDF/Excel
+  - Grafik tren penjualan
+  - Produk terlaris
+- **Contoh Penggunaan**: Admin membuat laporan penjualan bulan Februari 2024 untuk evaluasi bisnis
+
+#### 2.2.3 Fitur Khusus
+
+**A. Live Search**
+- **Deskripsi**: Pencarian real-time dengan AJAX
+- **Implementasi**: API endpoint `/api/search.php`
+- **Contoh**: Ketik "mawar" dan hasil muncul tanpa reload halaman
+
+**B. Shopping Cart API**
+- **Deskripsi**: Operasi keranjang via AJAX
+- **Implementasi**: API endpoint `/api/cart.php`
+- **Operasi**: add, update, remove, get_count
+- **Contoh**: Tambah produk ke cart dan counter keranjang update otomatis
+
+**C. Responsive Design**
+- **Deskripsi**: Tampilan adaptif untuk mobile dan desktop
+- **Teknologi**: CSS3 Media Queries
+- **Contoh**: Layout berubah dari 4 kolom di desktop menjadi 1 kolom di mobile
+
+---
+
+## 3. PENUTUP
+
+### 3.1 Kesimpulan
+
+Proyek **Sistem Informasi Toko Bunga Online** telah berhasil dikembangkan dengan fitur-fitur lengkap yang mendukung operasional toko bunga secara digital. Aplikasi ini mencakup:
+
+1. **Frontend yang User-Friendly**: Interface yang intuitif untuk pelanggan dengan fitur pencarian, keranjang belanja, dan checkout yang mudah digunakan.
+
+2. **Backend yang Komprehensif**: Panel admin yang lengkap untuk mengelola produk, pesanan, pengguna, dan menghasilkan laporan penjualan.
+
+3. **Database yang Terstruktur**: Skema database yang normalized dengan 6 tabel utama yang saling berelasi dengan baik.
+
+4. **Fitur Modern**: Implementasi live search, AJAX operations, dan responsive design yang mengikuti standar web modern.
+
+5. **Keamanan yang Memadai**: Sistem autentikasi dengan password hashing, role-based access control, dan prepared statements untuk mencegah SQL injection.
+
+Aplikasi ini telah divalidasi menggunakan standar HTML5 dan W3C validator, memastikan kompatibilitas dengan berbagai browser modern.
+
+### 3.2 Saran
+
+Untuk pengembangan lebih lanjut, disarankan untuk:
+
+1. **Implementasi Payment Gateway**: Integrasi dengan sistem pembayaran online seperti Midtrans, OVO, atau DANA untuk memudahkan transaksi.
+
+2. **Sistem Notifikasi**: Menambahkan notifikasi email/SMS untuk update status pesanan kepada pelanggan.
+
+3. **Analytics Dashboard**: Implementasi Google Analytics atau dashboard analitik custom untuk tracking behavior pelanggan.
+
+4. **Mobile App**: Pengembangan aplikasi mobile menggunakan React Native atau Flutter untuk jangkauan yang lebih luas.
+
+5. **Inventory Management**: Sistem peringatan stok rendah dan automated reorder point.
+
+6. **Customer Review System**: Fitur review dan rating produk untuk meningkatkan trust pelanggan.
+
+7. **Multilanguage Support**: Dukungan bahasa Indonesia dan Inggris untuk menjangkau pasar yang lebih luas.
+
+### 3.3 Tantangan yang Dihadapi
+
+Selama proses pengembangan, beberapa tantangan yang dihadapi antara lain:
+
+1. **Database Design**: Merancang relasi database yang optimal untuk mendukung fitur shopping cart dan order management yang kompleks.
+
+2. **Security Implementation**: Mengimplementasikan sistem keamanan yang robust tanpa mengorbankan user experience.
+
+3. **Responsive Design**: Membuat tampilan yang konsisten dan fungsional di berbagai ukuran layar dan device.
+
+4. **AJAX Implementation**: Mengintegrasikan live search dan cart operations dengan smooth user experience.
+
+5. **File Upload Management**: Mengelola upload gambar produk dengan validasi dan optimasi yang proper.
+
+6. **Session Management**: Implementasi session handling yang aman untuk multi-role user system.
+
+7. **Performance Optimization**: Optimasi query database dan loading time untuk handling data yang besar.
+
+Meski menghadapi tantangan tersebut, pengembangan aplikasi berhasil diselesaikan dengan baik dan menghasilkan sistem yang fungsional, aman, dan user-friendly sesuai dengan kebutuhan toko bunga online modern.
+
+---
+
+**Demikian laporan pengerjaan ini dibuat dengan sebenar-benarnya dan dapat dipertanggungjawabkan.**
+
+**Tanda Tangan:**
+
+[_________________]
+
+**Nama**: [ISI NAMA ANDA]  
+**NIM**: [ISI NIM ANDA]  
+**Tanggal**: [ISI TANGGAL] 

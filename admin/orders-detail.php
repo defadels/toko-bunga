@@ -33,7 +33,7 @@ $stmt = $pdo->prepare("
     SELECT oi.*, p.name as product_name, p.image, c.name as category_name
     FROM order_items oi
     JOIN products p ON oi.product_id = p.id
-    JOIN categories c ON p.category_id = c.id
+    LEFT JOIN categories c ON p.category_id = c.id
     WHERE oi.order_id = ?
 ");
 $stmt->execute([$order_id]);
@@ -47,6 +47,20 @@ $status_labels = [
     'shipped' => 'Sedang Dikirim',
     'delivered' => 'Selesai',
     'cancelled' => 'Dibatalkan'
+];
+
+// Payment status labels
+$payment_status_labels = [
+    'pending' => 'Belum Bayar',
+    'paid' => 'Sudah Bayar',
+    'failed' => 'Gagal'
+];
+
+// Payment method labels
+$payment_method_labels = [
+    'transfer' => 'Transfer Bank',
+    'cod' => 'Bayar di Tempat (COD)',
+    'ewallet' => 'E-Wallet'
 ];
 ?>
 
@@ -85,7 +99,7 @@ $status_labels = [
                         </div>
                         
                         <div class="info-group">
-                            <div class="info-label">Status</div>
+                            <div class="info-label">Status Pesanan</div>
                             <div class="info-value">
                                 <span class="status-badge status-<?php echo $order['status']; ?>">
                                     <?php echo $status_labels[$order['status']] ?? $order['status']; ?>
@@ -94,8 +108,17 @@ $status_labels = [
                         </div>
                         
                         <div class="info-group">
+                            <div class="info-label">Status Pembayaran</div>
+                            <div class="info-value">
+                                <span class="status-badge status-<?php echo $order['payment_status']; ?>">
+                                    <?php echo $payment_status_labels[$order['payment_status']] ?? $order['payment_status']; ?>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
                             <div class="info-label">Metode Pembayaran</div>
-                            <div class="info-value"><?php echo ucfirst($order['payment_method']); ?></div>
+                            <div class="info-value"><?php echo $payment_method_labels[$order['payment_method']] ?? ucfirst($order['payment_method']); ?></div>
                         </div>
                     </div>
                     
@@ -114,17 +137,52 @@ $status_labels = [
                             <div class="info-label">Telepon</div>
                             <div class="info-value"><?php echo htmlspecialchars($order['phone'] ?: '-'); ?></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="content-card">
+                <h2>Informasi Pengiriman</h2>
+                <div class="order-header">
+                    <div>
+                        <div class="info-group">
+                            <div class="info-label">Nama Penerima</div>
+                            <div class="info-value"><?php echo htmlspecialchars($order['recipient_name']); ?></div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">Telepon Penerima</div>
+                            <div class="info-value"><?php echo htmlspecialchars($order['recipient_phone']); ?></div>
+                        </div>
                         
                         <div class="info-group">
                             <div class="info-label">Alamat Pengiriman</div>
                             <div class="info-value"><?php echo htmlspecialchars($order['shipping_address']); ?></div>
                         </div>
                     </div>
+                    
+                    <div>
+                        <div class="info-group">
+                            <div class="info-label">Kota</div>
+                            <div class="info-value"><?php echo htmlspecialchars($order['city'] ? ucfirst($order['city']) : '-'); ?></div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">Kode Pos</div>
+                            <div class="info-value"><?php echo htmlspecialchars($order['postal_code'] ?: '-'); ?></div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">Biaya Pengiriman</div>
+                            <div class="info-value"><?php echo formatRupiah($order['shipping_cost']); ?></div>
+                        </div>
+                    </div>
                 </div>
                 
                 <?php if ($order['notes']): ?>
-                <div class="info-group">
-                    <div class="info-label">Catatan</div>
+                <div class="info-group" style="margin-top: 1rem;">
+                    <div class="info-label">Catatan Pesanan</div>
                     <div class="info-value"><?php echo htmlspecialchars($order['notes']); ?></div>
                 </div>
                 <?php endif; ?>
@@ -148,7 +206,9 @@ $status_labels = [
                         <tr>
                             <td>
                                 <img src="../assets/images/products/<?php echo htmlspecialchars($item['image']); ?>" 
-                                     alt="<?php echo htmlspecialchars($item['product_name']); ?>" class="product-image">
+                                     alt="<?php echo htmlspecialchars($item['product_name']); ?>" 
+                                     class="product-image"
+                                     onerror="this.src='../assets/images/placeholder.jpg'">
                             </td>
                             <td>
                                 <div><?php echo htmlspecialchars($item['product_name']); ?></div>
@@ -156,7 +216,7 @@ $status_labels = [
                             </td>
                             <td><?php echo formatRupiah($item['price']); ?></td>
                             <td><?php echo $item['quantity']; ?></td>
-                            <td><?php echo formatRupiah($item['price'] * $item['quantity']); ?></td>
+                            <td><?php echo formatRupiah($item['total']); ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -166,7 +226,7 @@ $status_labels = [
                 <div style="max-width: 300px; margin-left: auto; margin-top: 2rem;">
                     <div class="summary-row">
                         <span>Subtotal:</span>
-                        <span><?php echo formatRupiah($order['total_amount'] - $order['shipping_cost']); ?></span>
+                        <span><?php echo formatRupiah($order['subtotal']); ?></span>
                     </div>
                     <div class="summary-row">
                         <span>Ongkos Kirim:</span>

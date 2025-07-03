@@ -51,9 +51,15 @@ CREATE TABLE orders (
     user_id INT NOT NULL,
     order_number VARCHAR(50) UNIQUE NOT NULL,
     total_amount DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL DEFAULT 0,
     shipping_address TEXT NOT NULL,
     shipping_cost DECIMAL(10,2) DEFAULT 0,
+    recipient_name VARCHAR(100) NOT NULL,
+    recipient_phone VARCHAR(20) NOT NULL,
+    city VARCHAR(50),
+    postal_code VARCHAR(10),
     payment_method ENUM('transfer', 'cod', 'ewallet') NOT NULL,
+    payment_status ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
     status ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
     notes TEXT,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -68,6 +74,7 @@ CREATE TABLE order_items (
     product_id INT NOT NULL,
     quantity INT NOT NULL,
     price DECIMAL(12,2) NOT NULL,
+    total DECIMAL(12,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
@@ -115,16 +122,16 @@ INSERT INTO products (category_id, name, description, price, stock, image, weigh
 (5, 'Bunga Papan Duka Cita', 'Bunga papan untuk belasungkawa', 450000, 5, 'papan-duka.jpg', 5.0, 0),
 (1, 'Mawar Rainbow', 'Mawar dengan warna pelangi yang unik', 175000, 15, 'mawar-rainbow.jpg', 0.5, 1);
 
-INSERT INTO orders (user_id, order_number, total_amount, shipping_address, shipping_cost, payment_method, status) VALUES
-(3, 'ORD-2024-001', 165000, 'Jl. Pelanggan No. 1, Jakarta', 15000, 'transfer', 'delivered'),
-(4, 'ORD-2024-002', 355000, 'Jl. Pelanggan No. 2, Bandung', 20000, 'cod', 'shipped'),
-(5, 'ORD-2024-003', 515000, 'Jl. Pelanggan No. 3, Surabaya', 25000, 'ewallet', 'processing'),
-(3, 'ORD-2024-004', 195000, 'Jl. Pelanggan No. 1, Jakarta', 15000, 'transfer', 'confirmed'),
-(4, 'ORD-2024-005', 270000, 'Jl. Pelanggan No. 2, Bandung', 20000, 'transfer', 'pending');
+INSERT INTO orders (user_id, order_number, total_amount, subtotal, shipping_address, shipping_cost, recipient_name, recipient_phone, city, postal_code, payment_method, payment_status, status) VALUES
+(3, 'ORD-2024-001', 165000, 150000, 'Jl. Pelanggan No. 1, Jakarta', 15000, 'Budi Santoso', '082345678901', 'jakarta', '12345', 'transfer', 'paid', 'delivered'),
+(4, 'ORD-2024-002', 355000, 350000, 'Jl. Pelanggan No. 2, Bandung', 20000, 'Siti Nurhaliza', '083456789012', 'bandung', '54321', 'cod', 'pending', 'shipped'),
+(5, 'ORD-2024-003', 515000, 500000, 'Jl. Pelanggan No. 3, Surabaya', 25000, 'Ahmad Rahman', '084567890123', 'surabaya', '67890', 'ewallet', 'paid', 'processing'),
+(3, 'ORD-2024-004', 195000, 200000, 'Jl. Pelanggan No. 1, Jakarta', 15000, 'Budi Santoso', '082345678901', 'jakarta', '12345', 'transfer', 'pending', 'confirmed'),
+(4, 'ORD-2024-005', 270000, 250000, 'Jl. Pelanggan No. 2, Bandung', 20000, 'Siti Nurhaliza', '083456789012', 'bandung', '54321', 'transfer', 'pending', 'pending');
 
-INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
-(1, 1, 1, 150000),
-(2, 8, 1, 350000),
-(3, 10, 1, 500000),
-(4, 4, 1, 200000),
-(5, 6, 1, 250000); 
+INSERT INTO order_items (order_id, product_id, quantity, price, total) VALUES
+(1, 1, 1, 150000, 150000),
+(2, 8, 1, 350000, 350000),
+(3, 10, 1, 500000, 500000),
+(4, 4, 1, 200000, 200000),
+(5, 6, 1, 250000, 250000); 
