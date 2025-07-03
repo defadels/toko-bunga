@@ -162,7 +162,7 @@
                 </p>
             </div>
             <div class="about-image">
-                <img src="assets/images/about-us.jpg" alt="Tim Toko Bunga" 
+                <img src="assets/images/hero-flowers.jpg" alt="Tim Toko Bunga" 
                      onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZvdG8gVGltIEthbWk8L3RleHQ+PC9zdmc+'">
             </div>
         </div>
